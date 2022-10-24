@@ -2,13 +2,31 @@ import dns.resolver
 import platform   
 import subprocess  
 import threading
+import socket
 
+def telnet_run(ip,port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = sock.connect_ex((str(ip),port))
+    if result == 0:
+        print("*************"+ip +":"+ port +"is open"+"*************")
+
+    sock.close()
 
 def thread_run(item):
     answer = my_resolver.query(item)
     for rdata in answer:
         if ping(str(rdata)):
             print("valid IP : "+item + " = " +str(rdata))
+            list_threads_telnet = []
+            for i in range(10000):
+                list_threads_telnet.append(threading.Thread(target=telnet_run, args=(rdata,i,)))
+
+
+            for member in list_threads_telnet:
+                member.start()
+
+            for member in list_threads_telnet:
+                member.join()
         else:
             print("not response from : "+str(rdata)+"("+item+")")
 
@@ -49,3 +67,6 @@ for dns_server in dns_list :
 
     for member in list_threads:
         member.join()
+
+
+
